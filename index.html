@@ -4,20 +4,18 @@
   <meta charset="utf-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>BrickBreaker | Unity WebGL</title>
-
-  <!-- 기본 스타일 -->
   <link rel="stylesheet" href="TemplateData/style.css">
   <link rel="shortcut icon" href="TemplateData/favicon.ico">
 
-  <!-- ✅ 모바일에서도 확대/축소 허용 -->
-  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes, shrink-to-fit=yes">
+  <!-- ✅ 모바일 확대 허용 -->
+  <meta name="viewport"
+        content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes, shrink-to-fit=yes">
 </head>
 
 <body>
   <div id="unity-container" class="unity-desktop">
     <canvas id="unity-canvas" width="1920" height="1080" tabindex="-1"></canvas>
 
-    <!-- 로딩바 -->
     <div id="unity-loading-bar">
       <div id="unity-logo"></div>
       <div id="unity-progress-bar-empty">
@@ -27,7 +25,6 @@
 
     <div id="unity-warning"></div>
 
-    <!-- 하단 버튼/타이틀 -->
     <div id="unity-footer">
       <div id="unity-logo-title-footer"></div>
       <div id="unity-fullscreen-button"></div>
@@ -40,8 +37,9 @@
     var container = document.querySelector("#unity-container");
     var loadingBar = document.querySelector("#unity-loading-bar");
     var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+    var unityInstance = null;
 
-    // ===== 경고 메시지 표시 함수 =====
+    // === 경고 표시 ===
     function unityShowBanner(msg, type) {
       var warningBanner = document.querySelector("#unity-warning");
       function updateBannerVisibility() {
@@ -59,7 +57,7 @@
       updateBannerVisibility();
     }
 
-    // ===== Unity 빌드 설정 =====
+    // === Unity 빌드 설정 ===
     var buildUrl = "Build";
     var loaderUrl = buildUrl + "/WebBuild.loader.js";
     var config = {
@@ -73,12 +71,10 @@
       showBanner: unityShowBanner,
     };
 
-    // ===== 모바일 환경 감지 =====
+    // === 모바일 환경 설정 ===
     if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
       container.className = "unity-mobile";
       canvas.className = "unity-mobile";
-      // 필요 시 성능 조절
-      // config.devicePixelRatio = 1;
     } else {
       canvas.style.width = "1920px";
       canvas.style.height = "1080px";
@@ -86,16 +82,15 @@
 
     loadingBar.style.display = "block";
 
-    // ===== Unity 로더 불러오기 =====
+    // === Unity 로더 불러오기 ===
     var script = document.createElement("script");
     script.src = loaderUrl;
     script.onload = () => {
       createUnityInstance(canvas, config, (progress) => {
         document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-      }).then((unityInstance) => {
+      }).then((instance) => {
+        unityInstance = instance;
         loadingBar.style.display = "none";
-
-        // ✅ 전체화면 버튼 연결
         fullscreenButton.onclick = () => {
           unityInstance.SetFullscreen(1);
         };
@@ -105,12 +100,9 @@
     };
     document.body.appendChild(script);
 
-    // =====================================================
-    // ✅ 터치 → 마우스 이벤트 변환 (드래그 + 클릭 완전 지원)
-    // =====================================================
+    // === 터치 → 마우스 변환 (드래그 + 클릭 완전 지원) ===
     var unityCanvas = document.getElementById("unity-canvas");
 
-    // 터치 시작 → 마우스 다운
     unityCanvas.addEventListener("touchstart", function (e) {
       e.preventDefault();
       var touch = e.changedTouches[0];
@@ -122,7 +114,6 @@
       unityCanvas.dispatchEvent(mouseEvent);
     }, { passive: false });
 
-    // 터치 이동 → 마우스 이동 (드래그)
     unityCanvas.addEventListener("touchmove", function (e) {
       e.preventDefault();
       var touch = e.changedTouches[0];
@@ -134,12 +125,9 @@
       unityCanvas.dispatchEvent(mouseEvent);
     }, { passive: false });
 
-    // 터치 종료 → 마우스 업 + 클릭(포인터) 이벤트로 발사 인식
     unityCanvas.addEventListener("touchend", function (e) {
       e.preventDefault();
       var touch = e.changedTouches[0];
-
-      // 마우스 업
       var mouseUpEvent = new MouseEvent("mouseup", {
         clientX: touch.clientX,
         clientY: touch.clientY,
@@ -147,7 +135,7 @@
       });
       unityCanvas.dispatchEvent(mouseUpEvent);
 
-      // 포인터 다운 (공 발사 인식 강제)
+      // ✅ 공 발사 감지용 포인터 이벤트 추가
       var pointerEvent = new PointerEvent("pointerdown", {
         clientX: touch.clientX,
         clientY: touch.clientY,
@@ -156,7 +144,15 @@
       });
       unityCanvas.dispatchEvent(pointerEvent);
     }, { passive: false });
-    // =====================================================
+
+    // ✅ 첫 터치 시 자동 전체화면 실행
+    let firstTouch = true;
+    document.addEventListener("pointerdown", () => {
+      if (firstTouch && unityInstance) {
+        unityInstance.SetFullscreen(1);
+        firstTouch = false;
+      }
+    });
   </script>
 </body>
 </html>
