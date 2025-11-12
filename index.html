@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="TemplateData/style.css">
   <link rel="shortcut icon" href="TemplateData/favicon.ico">
 
-  <!-- ✅ 모바일 확대 허용 -->
   <meta name="viewport"
         content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes, shrink-to-fit=yes">
 </head>
@@ -106,12 +105,24 @@
     unityCanvas.addEventListener("touchstart", function (e) {
       e.preventDefault();
       var touch = e.changedTouches[0];
+      
+      // 마우스 다운 이벤트 시뮬레이션
       var mouseEvent = new MouseEvent("mousedown", {
         clientX: touch.clientX,
         clientY: touch.clientY,
         bubbles: true
       });
       unityCanvas.dispatchEvent(mouseEvent);
+
+      // ✅ 수정: 'pointerdown' 이벤트를 'touchstart'(터치 시작) 시점에 추가
+      var pointerEvent = new PointerEvent("pointerdown", {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        bubbles: true,
+        pointerType: "touch"
+      });
+      unityCanvas.dispatchEvent(pointerEvent);
+
     }, { passive: false });
 
     unityCanvas.addEventListener("touchmove", function (e) {
@@ -128,6 +139,8 @@
     unityCanvas.addEventListener("touchend", function (e) {
       e.preventDefault();
       var touch = e.changedTouches[0];
+      
+      // 마우스 업 이벤트 시뮬레이션
       var mouseUpEvent = new MouseEvent("mouseup", {
         clientX: touch.clientX,
         clientY: touch.clientY,
@@ -135,8 +148,8 @@
       });
       unityCanvas.dispatchEvent(mouseUpEvent);
 
-      // ✅ 공 발사 감지용 포인터 이벤트 추가
-      var pointerEvent = new PointerEvent("pointerdown", {
+      // ✅ 수정: 'pointerdown' 대신 'pointerup' 이벤트를 'touchend'(터치 종료) 시점에 추가
+      var pointerEvent = new PointerEvent("pointerup", {
         clientX: touch.clientX,
         clientY: touch.clientY,
         bubbles: true,
