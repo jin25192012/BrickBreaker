@@ -121,6 +121,46 @@
             };
 
       document.body.appendChild(script);
+     // ======== [터치 입력 → 마우스 입력 변환 코드 추가] ========
+
+// Unity Canvas 가져오기
+var unityCanvas = document.getElementById("unity-canvas");
+
+// 터치 시작(touchstart)을 마우스 클릭(mousedown)으로 변환
+unityCanvas.addEventListener("touchstart", function (e) {
+  e.preventDefault();
+  var touch = e.changedTouches[0];
+  var mouseEvent = new MouseEvent("mousedown", {
+    clientX: touch.clientX,
+    clientY: touch.clientY,
+  });
+  unityCanvas.dispatchEvent(mouseEvent);
+}, false);
+
+// 터치 이동(touchmove)을 마우스 이동(mousemove)으로 변환
+unityCanvas.addEventListener("touchmove", function (e) {
+  e.preventDefault();
+  var touch = e.changedTouches[0];
+  var mouseEvent = new MouseEvent("mousemove", {
+    clientX: touch.clientX,
+    clientY: touch.clientY,
+  });
+  unityCanvas.dispatchEvent(mouseEvent);
+}, false);
+
+// 터치 종료(touchend)을 마우스 업(mouseup)으로 변환
+unityCanvas.addEventListener("touchend", function (e) {
+  e.preventDefault();
+  var touch = e.changedTouches[0];
+  var mouseEvent = new MouseEvent("mouseup", {
+    clientX: touch.clientX,
+    clientY: touch.clientY,
+  });
+  unityCanvas.dispatchEvent(mouseEvent);
+}, false);
+
+// ===========================================================
+
 
     </script>
   </body>
