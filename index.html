@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>BrickBreaker | Unity WebGL</title>
+
+  <link rel="stylesheet" href="TemplateData/style.css">
+  <link rel="shortcut icon" href="TemplateData/favicon.ico">
+
+  <meta name="viewport"
+        content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes, shrink-to-fit=yes">
+</head>
+
+<body>
+  <div id="unity-container" class="unity-desktop">
+    <canvas id="unity-canvas" width="1920" height="1080" tabindex="-1"></canvas>
+
+    <!-- 로딩바 -->
+    <div id="unity-loading-bar">
+      <div id="unity-logo"></div>
+      <div id="unity-progress-bar-empty">
+        <div id="unity-progress-bar-full"></div>
+      </div>
+    </div>
+
+    <div id="unity-warning"></div>
+
+    <!-- ✅ 전체화면 버튼 완전히 제거됨 -->
+    <div id="unity-footer">
+      <div id="unity-logo-title-footer"></div>
+      <div id="unity-build-title">BrickBreaker</div>
+    </div>
+  </div>
+
+  <script>
+    // 기본 참조
+    var canvas = document.querySelector("#unity-canvas");
+    var container = document.querySelector("#unity-container");
+    var loadingBar = document.querySelector("#unity-loading-bar");
+    var unityInstance = null;
+
+    // 경고 표시
+    function unityShowBanner(msg, type) {
+      var warningBanner = document.querySelector("#unity-warning");
+      function updateBannerVisibility() {
+        warningBanner.style.display = warningBanner.children.length ? "block" : "none";
+      }
+      var div = document.createElement("div");
+      div.innerHTML = msg;
+      warningBanner.appendChild(div);
+      if (type === "error") div.style = "background: red; padding: 10px;";
+      else if (type === "warning") div.style = "background: yellow; padding: 10px;";
+      setTimeout(() => {
+        warningBanner.removeChild(div);
+        updateBannerVisibility();
+      }, 5000);
+      updateBannerVisibility();
+    }
+
+    // Unity 빌드 설정
+    var buildUrl = "Build";
+    var loaderUrl = buildUrl + "/WebBuild.loader.js";
+    var config = {
+      dataUrl: buildUrl + "/WebBuild.data.unityweb",
+      frameworkUrl: buildUrl + "/WebBuild.framework.js.unityweb",
+      codeUrl: buildUrl + "/WebBuild.wasm.unityweb",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "비봉고등학교",
+      productName: "BrickBreaker",
+      productVersion: "1.0",
+      showBanner: unityShowBanner,
+    };
+
+    // 모바일 환경 설정
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      container.className = "unity-mobile";
+      canvas.className = "unity-mobile";
+    } else {
+      canvas.style.width = "1920px";
+      canvas.style.height = "1080px";
+    }
+
+    loadingBar.style.display = "block";
+
+    // Unity 로더 실행
+    var script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      createUnityInstance(canvas, config, (progress) => {
+        document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+      }).then((instance) => {
+        unityInstance = instance;
+        loadingBar.style.display = "none";
+      }).catch((message) => {
+        alert(message);
+      });
+    };
+    document.body.appendChild(script);
+
+    // ✅ 터치 입력 → 마우스 이벤트 변환 (드래그 + 클릭 지원)
+    var unityCanvas = document.getElementById("unity-canvas");
+
+    unityCanvas.addEventListener("touchstart", function (e) {
+      e.preventDefault();
+      var touch = e.changedTouches[0];
+
+      var mouseDown = new MouseEvent("mousedown", {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        bubbles: true
+      });
+      unityCanvas.dispatchEvent(mouseDown);
+
+      var pointerDown = new PointerEvent("pointerdown", {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        bubbles: true,
+        pointerType: "touch"
+      });
+      unityCanvas.dispatchEvent(pointerDown);
+    }, { passive: false });
+
+    unityCanvas.addEventListener("touchmove", function (e) {
+      e.preventDefault();
+      var touch = e.changedTouches[0];
+      var mouseMove = new MouseEvent("mousemove", {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        bubbles: true
+      });
+      unityCanvas.dispatchEvent(mouseMove);
+    }, { passive: false });
+
+    unityCanvas.addEventListener("touchend", function (e) {
+      e.preventDefault();
+      var touch = e.changedTouches[0];
+      var mouseUp = new MouseEvent("mouseup", {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        bubbles: true
+      });
+      unityCanvas.dispatchEvent(mouseUp);
+
+      var pointerUp = new PointerEvent("pointerup", {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        bubbles: true,
+        pointerType: "touch"
+      });
+      unityCanvas.dispatchEvent(pointerUp);
+    }, { passive: false });
+
+    // ✅ 자동 전체화면 코드 제거됨 (원치 않는 박스/전환 없음)
+  </script>
+</body>
+</html>
