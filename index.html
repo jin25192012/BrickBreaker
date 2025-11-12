@@ -86,7 +86,7 @@
 
         var meta = document.createElement('meta');
         meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=yes, shrink-to-fit=yes';
         document.getElementsByTagName('head')[0].appendChild(meta);
         document.querySelector("#unity-container").className = "unity-mobile";
         canvas.className = "unity-mobile";
@@ -121,45 +121,58 @@
             };
 
       document.body.appendChild(script);
-     // ======== [터치 입력 → 마우스 입력 변환 코드 추가] ========
-
-// Unity Canvas 가져오기
+    // =========================================================
+// 🟢 터치 입력 → 마우스/클릭 입력 완전 지원 코드 (드래그+클릭)
+// =========================================================
 var unityCanvas = document.getElementById("unity-canvas");
 
-// 터치 시작(touchstart)을 마우스 클릭(mousedown)으로 변환
+// 🔹 터치 시작 → 마우스 다운
 unityCanvas.addEventListener("touchstart", function (e) {
   e.preventDefault();
   var touch = e.changedTouches[0];
   var mouseEvent = new MouseEvent("mousedown", {
     clientX: touch.clientX,
     clientY: touch.clientY,
+    bubbles: true
   });
   unityCanvas.dispatchEvent(mouseEvent);
-}, false);
+}, { passive: false });
 
-// 터치 이동(touchmove)을 마우스 이동(mousemove)으로 변환
+// 🔹 터치 이동 → 마우스 이동 (드래그)
 unityCanvas.addEventListener("touchmove", function (e) {
   e.preventDefault();
   var touch = e.changedTouches[0];
   var mouseEvent = new MouseEvent("mousemove", {
     clientX: touch.clientX,
     clientY: touch.clientY,
+    bubbles: true
   });
   unityCanvas.dispatchEvent(mouseEvent);
-}, false);
+}, { passive: false });
 
-// 터치 종료(touchend)을 마우스 업(mouseup)으로 변환
+// 🔹 터치 종료 → 마우스 업 + 클릭
 unityCanvas.addEventListener("touchend", function (e) {
   e.preventDefault();
   var touch = e.changedTouches[0];
-  var mouseEvent = new MouseEvent("mouseup", {
+
+  // 마우스 업
+  var mouseUpEvent = new MouseEvent("mouseup", {
     clientX: touch.clientX,
     clientY: touch.clientY,
+    bubbles: true
   });
-  unityCanvas.dispatchEvent(mouseEvent);
-}, false);
+  unityCanvas.dispatchEvent(mouseUpEvent);
 
-// ===========================================================
+  // 클릭 이벤트 (패들 터치 시 공 발사 등)
+  var clickEvent = new MouseEvent("click", {
+    clientX: touch.clientX,
+    clientY: touch.clientY,
+    bubbles: true
+  });
+  unityCanvas.dispatchEvent(clickEvent);
+}, { passive: false });
+// =========================================================
+
 
 
     </script>
