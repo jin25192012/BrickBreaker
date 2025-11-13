@@ -26,7 +26,6 @@
 
     <div id="unity-warning"></div>
 
-    <!-- ✅ 전체화면 버튼 완전히 제거됨 -->
     <div id="unity-footer">
       <div id="unity-logo-title-footer"></div>
       <div id="unity-build-title">BrickBreaker</div>
@@ -34,13 +33,11 @@
   </div>
 
   <script>
-    // 기본 참조
     var canvas = document.querySelector("#unity-canvas");
     var container = document.querySelector("#unity-container");
     var loadingBar = document.querySelector("#unity-loading-bar");
     var unityInstance = null;
 
-    // 경고 표시
     function unityShowBanner(msg, type) {
       var warningBanner = document.querySelector("#unity-warning");
       function updateBannerVisibility() {
@@ -58,7 +55,6 @@
       updateBannerVisibility();
     }
 
-    // Unity 빌드 설정
     var buildUrl = "Build";
     var loaderUrl = buildUrl + "/WebBuild.loader.js";
     var config = {
@@ -72,7 +68,7 @@
       showBanner: unityShowBanner,
     };
 
-    // 모바일 환경 설정
+    // 모바일 대응
     if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
       container.className = "unity-mobile";
       canvas.className = "unity-mobile";
@@ -92,33 +88,38 @@
       }).then((instance) => {
         unityInstance = instance;
         loadingBar.style.display = "none";
+
+        // ✅ 게임 시작 시 자동 공 발사 트리거
+        setTimeout(() => {
+          if (unityInstance && unityInstance.SendMessage) {
+            // Ball 스크립트에 Launch 메서드 직접 호출
+            try {
+              unityInstance.SendMessage("Ball", "Launch");
+            } catch (err) {
+              console.log("공 자동 발사 실패: " + err);
+            }
+          }
+        }, 1500); // 1.5초 후 자동 발사
       }).catch((message) => {
         alert(message);
       });
     };
     document.body.appendChild(script);
 
-    // ✅ 터치 입력 → 마우스 이벤트 변환 (드래그 + 클릭 지원)
+    // ✅ 터치 입력 → 패들 이동만 허용, 공은 무시
     var unityCanvas = document.getElementById("unity-canvas");
 
     unityCanvas.addEventListener("touchstart", function (e) {
       e.preventDefault();
       var touch = e.changedTouches[0];
 
+      // Paddle 이동에만 반응
       var mouseDown = new MouseEvent("mousedown", {
         clientX: touch.clientX,
         clientY: touch.clientY,
         bubbles: true
       });
       unityCanvas.dispatchEvent(mouseDown);
-
-      var pointerDown = new PointerEvent("pointerdown", {
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        bubbles: true,
-        pointerType: "touch"
-      });
-      unityCanvas.dispatchEvent(pointerDown);
     }, { passive: false });
 
     unityCanvas.addEventListener("touchmove", function (e) {
@@ -141,17 +142,7 @@
         bubbles: true
       });
       unityCanvas.dispatchEvent(mouseUp);
-
-      var pointerUp = new PointerEvent("pointerup", {
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        bubbles: true,
-        pointerType: "touch"
-      });
-      unityCanvas.dispatchEvent(pointerUp);
     }, { passive: false });
-
-    // ✅ 자동 전체화면 코드 제거됨 (원치 않는 박스/전환 없음)
   </script>
 </body>
 </html>
